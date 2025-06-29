@@ -1,0 +1,11 @@
+threat_indicator
+http://malicious-site.com/exploit.php
+http://phishing-site.com/steal
+http://suspicious-ip.net/scan
+185.33.32.156
+188.45.67.89
+http://malware-download.net/trojan.exe
+203.0.113.99
+http://spam-campaign.org/click
+192.168.100.200
+http://botnet-c2.com/command

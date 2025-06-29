@@ -1,0 +1,10 @@
+192.168.1.100 accessed https://github.com/user/repo at 2025-06-29 10:15:23
+10.0.0.25 connected to http://malicious-site.com/exploit.php from port 8080
+172.16.0.50 sent request to https://secure-banking.com/transfer with status 200
+192.168.1.200 performed DNS lookup for google.com via 8.8.8.8
+185.33.32.156 attempted SSH connection - BLOCKED by firewall
+172.16.0.100 accessed https://example.com/login successfully
+192.168.1.150 made HTTP request to http://suspicious-ip.net/scan - DENIED
+10.0.0.33 connected to https://legitimate-site.org/api/data
+203.0.113.45 accessed internal resource /admin/panel
+188.45.67.89 triggered malware detection on http://phishing-site.com/steal
