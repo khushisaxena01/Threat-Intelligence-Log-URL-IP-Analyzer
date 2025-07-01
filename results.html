@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - Security Log Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #e0e6ff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .risky {
+            color: #e74c3c;
+        }
+
+        .safe {
+            color: #27ae60;
+        }
+
+        .neutral {
+            color: #3498db;
+        }
+
+        .warning {
+            color: #f39c12;
+        }
+
+        .chart-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e0e6ff;
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #pieChart {
+            max-width: 400px;
+            max-height: 400px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
+        }
+
+        .processing-time {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .processing-time h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .processing-time p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .blocked-items {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .blocked-items h3 {
+            color: #e53e3e;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .blocked-items p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .summary-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-data h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .percentage-display {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Analysis Results</h1>
+            <p>Security threat analysis completed successfully</p>
+        </div>
+
+        <div class="content">
+            {% if results and results.success %}
+                <!-- Processing Time -->
+                <div class="processing-time">
+                    <h3>⚡ Processing Completed</h3>
+                    <p>Analysis completed in <strong>{{ results.processing_time }}</strong> seconds</p>
+                </div>
+
+                <!-- Summary Card -->
+                {% set hit_percentage = (results.hits / results.total * 100) if results.total > 0 else 0 %}
+                <div class="summary-card">
+                    <h3>🛡️ Security Status</h3>
+                    <p>
+                        {% if hit_percentage < 5 %}
+                            Excellent security posture - Very low risk detected
+                        {% elif hit_percentage < 15 %}
+                            Good security posture - Low risk detected
+                        {% elif hit_percentage < 30 %}
+                            Moderate security posture - Some risks detected
+                        {% else %}
+                            High security risks detected - Immediate attention required
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-value neutral">{{ results.total }}</div>
+                        <div class="stat-label">Total Records</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🚨</div>
+                        <div class="stat-value risky">{{ results.hits }}</div>
+                        <div class="stat-label">Risky (HIT)</div>
+                        <div class="percentage-display">{{ "%.1f"|format(hit_percentage) }}%</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value safe">{{ results.misses }}</div>
+                        <div class="stat-label">Safe (MISS)</div>
+                        <div class="percentage-display">{{ "%.1f"|format(100 - hit_percentage) }}%</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🛡️</div>
+                        <div class="stat-value warning">{{ results.blocked_items_count }}</div>
+                        <div class="stat-label">Blocked URLs/IPs</div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                {% if results.chart_data %}
+                <div class="chart-section">
+                    <h3 class="chart-title">🎯 Security Risk Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #FF6B6B;"></div>
+                            <span>Risky ({{ results.chart_data.percentages[0] }}%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #4ECDC4;"></div>
+                            <span>Safe ({{ results.chart_data.percentages[1] }}%)</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Blocked Items Alert -->
+                {% if results.hits > 0 %}
+                <div class="blocked-items">
+                    <h3>🚨 Security Alert</h3>
+                    <p>
+                        <strong>{{ results.hits }}</strong> potentially dangerous entries were detected in your logs. 
+                        These entries matched against known blocked URLs and IP addresses, indicating possible security threats 
+                        or policy violations. Please review the detailed Excel report for specific information about each threat.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="actions">
+                    <a href="/download_excel" class="btn btn-success">
+                        📥 Download Excel Report
+                    </a>
+                    <a href="/" class="btn btn-primary">
+                        🔄 Analyze New Files
+                    </a>
+                </div>
+
+            {% else %}
+                <!-- No Data -->
+                <div class="no-data">
+                    <h3>❌ No Results Available</h3>
+                    <p>No analysis results found. Please go back and upload your files.</p>
+                    <div class="actions">
+                        <a href="/" class="btn btn-primary">
+                            🏠 Go Back to Upload
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        // Initialize pie chart if data exists
+        {% if results and results.success and results.chart_data %}
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            const chartData = {{ results.chart_data | tojson }};
+            
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.data,
+                        backgroundColor: chartData.colors,
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverBorderWidth: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const percentage = chartData.percentages[context.dataIndex];
+                                    return `${label}: ${value} entries (${percentage}%)`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#fff',
+                            borderWidth: 1
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000
+                    }
+                }
+            });
+        });
+        {% endif %}
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stat cards on load
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.6s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 200);
+            });
+
+            // Add click effects to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255, 255, 255, 0.5);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+        });
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

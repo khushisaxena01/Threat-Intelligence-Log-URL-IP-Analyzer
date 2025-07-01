@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL & IP Address Analysis Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-box.dragover {
+            border-color: #4caf50;
+            background: #e8f5e8;
+        }
+
+        .upload-label {
+            display: block;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e0e6ff;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .upload-box {
+                padding: 20px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Security Log Analyzer</h1>
+            <p>Upload your log files and URL/IP lists to analyze potential security threats. Our advanced system will cross-reference your logs with blocked URLs and IPs to identify potential risks.</p>
+        </div>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-section">
+                <div class="upload-box" id="logsBox">
+                    <label class="upload-label" for="logs_file">
+                        📋 Upload Log Files
+                    </label>
+                    <input type="file" id="logs_file" name="logs_file" class="file-input" accept=".csv,.txt,.xlsx,.xls,.json" required>
+                    <div class="file-info">
+                        Supported formats: CSV, TXT, XLSX, XLS, JSON (Max: 5GB)
+                    </div>
+                </div>
+
+                <div class="upload-box" id="urlsBox">
+                    <label class="upload-label" for="urls_ips_file">
+                        🛡️ Upload URL/IP List
+                    </label>
+                    <input type="file" id="urls_ips_file" name="urls_ips_file" class="file-input" accept=".csv,.txt,.xlsx,.xls,.json" required>
+                    <div class="file-info">
+                        Should contain URLs/IPs categorized as accepted, rejected, or blocked
+                    </div>
+                </div>
+
+                <button type="submit" class="analyze-btn" id="analyzeBtn">
+                    🚀 Analyze Logs
+                </button>
+            </div>
+        </form>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-text">
+                <span id="progressMessage">Processing...</span>
+                <span class="progress-percentage" id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Processes up to 5GB of data in under 30 seconds using advanced multithreading</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>Accurate Detection</h3>
+                <p>Identifies security threats by matching logs against blocked URLs and IPs</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Visual Reports</h3>
+                <p>Generates detailed Excel reports and interactive charts for easy analysis</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressMessage = document.getElementById('progressMessage');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Drag and drop functionality
+        const uploadBoxes = document.querySelectorAll('.upload-box');
+        
+        uploadBoxes.forEach(box => {
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.classList.add('dragover');
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.classList.remove('dragover');
+            });
+
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const input = box.querySelector('.file-input');
+                    input.files = files;
+                }
+            });
+        });
+
+        function showAlert(message, type = 'error') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+        }
+
+        function updateProgress(progress, message) {
+            progressFill.style.width = `${progress}%`;
+            progressPercentage.textContent = `${progress}%`;
+            progressMessage.textContent = message;
+        }
+
+        function pollProgress() {
+            fetch('/progress')
+                .then(response => response.json())
+                .then(data => {
+                    updateProgress(data.progress, data.message);
+                    
+                    if (data.status === 'processing') {
+                        setTimeout(pollProgress, 1000);
+                    } else if (data.status === 'completed') {
+                        setTimeout(() => {
+                            window.location.href = '/results';
+                        }, 1000);
+                    } else if (data.status === 'error') {
+                        showAlert(data.message);
+                        resetForm();
+                    }
+                })
+                .catch(error => {
+                    console.error('Progress polling error:', error);
+                    showAlert('Error checking progress');
+                    resetForm();
+                });
+        }
+
+        function resetForm() {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '🚀 Analyze Logs';
+            progressContainer.style.display = 'none';
+        }
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(uploadForm);
+            const logsFile = formData.get('logs_file');
+            const urlsFile = formData.get('urls_ips_file');
+
+            if (!logsFile || !urlsFile || logsFile.size === 0 || urlsFile.size === 0) {
+                showAlert('Please select both files');
+                return;
+            }
+
+            // Check file sizes (5GB limit)
+            const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
+            if (logsFile.size > maxSize || urlsFile.size > maxSize) {
+                showAlert('File size exceeds 5GB limit');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<span class="spinner"></span>Uploading...';
+            progressContainer.style.display = 'block';
+            alertContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Files uploaded successfully! Analysis started...', 'success');
+                    analyzeBtn.innerHTML = '<span class="spinner"></span>Analyzing...';
+                    pollProgress();
+                } else {
+                    showAlert(result.error || 'Upload failed');
+                    resetForm();
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showAlert('Network error occurred. Please try again.');
+                resetForm();
+            }
+        });
+
+        // File input change handlers for better UX
+        document.getElementById('logs_file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const info = document.querySelector('#logsBox .file-info');
+                info.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                info.style.color = '#4caf50';
+            }
+        });
+
+        document.getElementById('urls_ips_file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const info = document.querySelector('#urlsBox .file-info');
+                info.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                info.style.color = '#4caf50';
+            }
+        });
